@@ -1,4 +1,5 @@
 import { API_ENDPOINTS, buildApiUrl } from "@/apiInstance";
+import { IOrderData } from "@/types";
 import { cookies, headers } from "next/headers";
 
 const getCustomerOrderstats = async () => {
@@ -162,10 +163,45 @@ const cancelOrder = async (id: string) => {
   }
 };
 
+const createOrder = async (orderData: IOrderData) => {
+  try {
+    const cookieStorage = await cookies();
+
+    const url = new URL(buildApiUrl(API_ENDPOINTS.orders.createOrder));
+
+    const res = await fetch(url.toString(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieStorage.toString(),
+      },
+
+      body: JSON.stringify(orderData),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      return {
+        data: null,
+        error: { message: "Error: Post not created." },
+      };
+    }
+
+    return {
+      data: data,
+      error: null,
+    };
+  } catch (error) {
+    return { data: null, error: { message: "Something Went Wrong" } };
+  }
+};
+
 export const CustomerService = {
   getCustomerOrderstats,
   getCustomerRecentOrder,
   getAllOrders,
   getOrderId,
   cancelOrder,
+  createOrder,
 };
